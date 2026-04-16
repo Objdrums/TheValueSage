@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from "react"
 
 // ── IMAGE SLOTS ───────────────────────────────────────────────────────────────
-const IMGS = { hero: null, about: null }
-// Replace null with your image URLs e.g. "https://i.imgur.com/abc.jpg"
+const IMGS = { hero: "/hero-photo.svg", about: null }
+// Replace /hero-photo.svg with your own public asset or image URL to show your photo on the home screen.
 
 // ── THEME ─────────────────────────────────────────────────────────────────────
 const THEMES = {
@@ -621,11 +621,13 @@ export default function App(){
 
   const Home = () => (
     <div>
-      <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 clamp(16px,4vw,64px)",position:"static",overflow:"hidden"}}>
+      <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 clamp(16px,4vw,64px)",position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",inset:0,pointerEvents:"none",animation:"efade 1.2s ease both"}}>
           <div style={{position:"absolute",top:"-5%",right:"-10%",width:"55%",height:"60%",background:`radial-gradient(circle,${C.coral}14 0%,transparent 68%)`,animation:"orb1 12s ease-in-out infinite"}}/>
           <div style={{position:"absolute",bottom:"-5%",left:"-8%",width:"45%",height:"50%",background:"radial-gradient(circle,#8B4CF61A 0%,transparent 65%)",animation:"orb2 15s ease-in-out infinite"}}/>
           <div style={{position:"absolute",top:"40%",left:"25%",width:"30%",height:"35%",background:`radial-gradient(circle,${C.coral}08 0%,transparent 60%)`,animation:"orb3 9s ease-in-out infinite"}}/>
+          <div style={{position:"absolute",top:"12%",left:"-8%",width:220,height:220,border:`1px solid rgba(255,77,46,.16)`,borderRadius:220,filter:"blur(12px)",animation:"orb2 9s ease-in-out infinite"}}/>
+          <div style={{position:"absolute",bottom:"22%",right:"-4%",width:"140%",height:18,background:"linear-gradient(90deg,transparent,rgba(255,77,46,.16),transparent)",transform:"rotate(-18deg)",filter:"blur(1px)",animation:"orb1 4.8s ease-in-out infinite"}}/>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:60,position:"relative",flexWrap:"wrap"}}>
           <div className="afu" style={{flex:1,minWidth:280}}>
@@ -666,7 +668,7 @@ export default function App(){
       <div style={{padding:"64px clamp(16px,4vw,64px)"}}>
         <p style={{color:C.muted,fontSize:11,letterSpacing:"0.18em",textTransform:"uppercase",marginBottom:36}}>What I Do</p>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:16}}>
-          {[{icon:"◈",t:"Brand Identity",d:"Full systems — naming, strategy, visual language, and guidelines.",to:"services",tag:"Brand"},{icon:"▦",t:"Web Design & Build",d:"Websites that look like your brand actually thought about itself.",cat:"Web",to:"services",tag:"Web"},{icon:"⬡",t:"AI & Automations",cat:"AI",d:"Real workflow integration — saving hours, scaling without extra headcount.",to:"services",tag:"AI"},{icon:"◉",t:"Sessions & Speaking",d:"1-on-1 coaching, group workshops, keynote speaking.",to:"sessions",tag:"Book"},{icon:"▣",t:"Books & Music",d:"Practical books on brand, business, value — and music theory (TEOM).",to:"books",tag:"Read"},{icon:"◆",t:"Brand School",d:"Free educational content across branding, finance, AI, and music.",to:"school",tag:"Free"}].map(item=>(
+          {[{icon:"◈",t:"Brand Identity",d:"Full systems — naming, strategy, visual language, and guidelines.",to:"services",cat:"Brand",tag:"Brand"},{icon:"▦",t:"Web Design & Build",d:"Websites that look like your brand actually thought about itself.",cat:"Web",to:"services",tag:"Web"},{icon:"⬡",t:"AI & Automations",cat:"AI",d:"Real workflow integration — saving hours, scaling without extra headcount.",to:"services",tag:"AI"},{icon:"◉",t:"Sessions & Speaking",d:"1-on-1 coaching, group workshops, keynote speaking.",to:"sessions",tag:"Book"},{icon:"▣",t:"Books & Music",d:"Practical books on brand, business, value — and music theory (TEOM).",to:"books",tag:"Read"},{icon:"◆",t:"Brand School",d:"Free educational content across branding, finance, AI, and music.",to:"school",tag:"Free"}].map(item=>(
             <div key={item.t} onClick={()=>{if(item.cat)setSvCat(item.cat);go(item.to)}} className="ch" style={{...card,padding:24,cursor:"pointer"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
                 <span style={{fontSize:22,color:C.coral}}>{item.icon}</span>

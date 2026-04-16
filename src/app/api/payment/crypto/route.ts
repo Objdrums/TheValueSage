@@ -2,95 +2,84 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseAdminClient } from '@/lib/supabase'
 import crypto from 'crypto'
 
-// Coinbase Commerce — works with Gmail, no KYC, supports BTC/ETH/USDT/USDC
-// Sign up at: commerce.coinbase.com
-// Accepted in Nigeria, popular with tech-forward clients
+// NOW Payments gateway integration
+// Sign up at: nowpayments.io
+// Supports crypto and multi-currency invoices for direct checkout pages.
 
 export async function POST(req: NextRequest) {
   try {
     const { invoiceId, invoiceNumber, amount, name, description, type } = await req.json()
 
-    const apiKey = process.env.COINBASE_COMMERCE_API_KEY
+    const apiKey = process.env.NOWPAYMENTS_API_KEY
     if (!apiKey) {
-      return NextResponse.json({ error: 'Crypto payments not configured' }, { status: 503 })
+      return NextResponse.json({ error: 'NOW Payments not configured' }, { status: 503 })
     }
 
-    // Create a Coinbase Commerce charge
-    const response = await fetch('https://api.commerce.coinbase.com/charges', {
+    const response = await fetch('https://api.nowpayments.io/v1/invoice', {
       method: 'POST',
       headers: {
-        'X-CC-Api-Key': apiKey,
-        'X-CC-Version': '2018-03-22',
+        'x-api-key': apiKey,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        name: `The Value Sage™ — ${invoiceNumber}`,
-        description: description || `${name} · ${type === 'deposit' ? '50% Deposit' : 'Full Payment'}`,
-        local_price: {
-          amount: amount.toString(),
-          currency: 'NGN',
-        },
-        pricing_type: 'fixed_price',
-        metadata: {
-          invoice_id: invoiceId,
-          invoice_number: invoiceNumber,
-          payment_type: type,
-          client_name: name,
-        },
-        redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/crypto-success`,
+        price_amount: Number(amount),
+        price_currency: 'NGN',
+        order_id: invoiceId,
+        order_description: description || `${name} · ${type === 'deposit' ? '50% Deposit' : 'Full Payment'}`,
+        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/crypto-success`,
         cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/invoices`,
+        ipn_callback_url: `${
+          .env.NEXT_PUBLIC_APP_URL}/api/payment/crypto`,
       }),
     })
 
     const data = await response.json()
 
     if (!response.ok) {
-      console.error('Coinbase Commerce error:', data)
-      return NextResponse.json({ error: 'Crypto payment initialization failed' }, { status: 400 })
+      console.error('NOW Payments error:', data)
+      return NextResponse.json({ error: 'NOW Payments initialization failed' }, { status: 400 })
     }
 
     return NextResponse.json({
-      hosted_url: data.data.hosted_url,
-      code: data.data.code,
-      // Supported currencies shown on Coinbase hosted page:
-      // Bitcoin (BTC), Ethereum (ETH), USDC, USDT, DAI, and more
+      hosted_url: data.invoice_url,
+      code: data.id,
     })
   } catch (err) {
-    console.error('Crypto payment error:', err)
+    console.error('NOW Payments error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
-// Webhook handler — Coinbase Commerce sends events when payment status changes
+// Webhook handler — NOW Payments sends IPN callbacks when payment status changes
 export async function PUT(req: NextRequest) {
   const body = await req.text()
-  const signature = req.headers.get('x-cc-webhook-signature')
-  const webhookSecret = process.env.COINBASE_COMMERCE_WEBHOOK_SECRET
+  const signature = req.headers.get('x-nowpayments-signature') || req.headers.get('X-NowPayments-Signature')
+  const webhookSecret = process.env.NOWPAYMENTS_WEBHOOK_SECRET
 
   if (!signature || !webhookSecret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Verify webhook signature
-  const hmac = crypto.createHmac('sha256', webhookSecret).update(body).digest('hex')
+  const hmac = crypto.createHmac('sha512', webhookSecret).update(body).digest('hex')
   if (hmac !== signature) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
   }
 
   const event = JSON.parse(body)
+  const status = event.payment_status || event.status
 
-  if (event.event.type === 'charge:confirmed') {
-    const { invoice_id, payment_type } = event.event.data.metadata
+  if (status === 'finished' || status === 'successful' || status === 'success') {
+    const invoiceId = event.order_id || event.order_id_string || event.external_id
     const supabase = createSupabaseAdminClient()
     await supabase
       .from('invoices')
       .update({
-        status: payment_type === 'deposit' ? 'deposit_paid' : 'paid',
-        payment_method: 'crypto',
-        crypto_currency: event.event.data.payments?.[0]?.net?.crypto?.currency,
-        payment_ref: event.event.data.code,
+        status: event.payment_type === 'deposit' ? 'deposit_paid' : 'paid',
+        payment_method: 'nowpayments',
+        crypto_currency: event.payment_currency || event.pay_currency || null,
+        payment_ref: event.payment_id || event.id || event.payment_hash || null,
       })
-      .eq('id', invoice_id)
+      .eq('id', invoiceId)
   }
 
   return NextResponse.json({ received: true })
