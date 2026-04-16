@@ -243,9 +243,9 @@ const BLOCKED_DATES = new Set(["2026-04-07","2026-04-08","2026-04-11","2026-04-1
 const TIMES = ["9:00 AM","10:00 AM","11:00 AM","1:00 PM","2:00 PM","3:00 PM","4:00 PM"]
 const ADMIN_PASS = "valuesage2025"
 
-function shuffle(arr){ return [...arr].sort(()=>Math.random()-.5) }
-function fmtPrice(n){ return n ? `₦${n.toLocaleString()}` : "Custom" }
-function addVAT(n){ return n + Math.round(n*VAT_RATE) }
+function shuffle(arr: any[]) { return [...arr].sort(()=>Math.random()-.5) }
+function fmtPrice(n: any) { return n ? `₦${n.toLocaleString()}` : "Custom" }
+function addVAT(n: any) { return n + Math.round(n*VAT_RATE) }
 
 // ── FORM COMPONENTS (defined OUTSIDE App to prevent remount on each keystroke) ─
 
