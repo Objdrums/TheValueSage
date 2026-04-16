@@ -28,8 +28,7 @@ export async function POST(req: NextRequest) {
         order_description: description || `${name} · ${type === 'deposit' ? '50% Deposit' : 'Full Payment'}`,
         success_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/crypto-success`,
         cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/invoices`,
-        ipn_callback_url: `${
-          .env.NEXT_PUBLIC_APP_URL}/api/payment/crypto`,
+        ipn_callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/payment/crypto`,
       }),
     })
 
