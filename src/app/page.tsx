@@ -277,7 +277,7 @@ function ContactForm({ C, coral }: { C: any, coral: any }) {
   const [form, setForm] = useState({ name:"", email:"", subject:"", message:"" })
   const [sent, setSent] = useState(false)
   const inp = { width:"100%", padding:"11px 16px", borderRadius:8, fontSize:14, background:C.card2, border:`1px solid ${C.border}`, color:C.text, fontFamily:"'DM Sans',sans-serif", outline:"none" }
-  const set = (k) => (e) => setForm(p=>({...p,[k]:e.target.value}))
+  const set = (k: any) => (e: any) => setForm((p: any) => ({...p, [k]: e.target.value}))
   if(sent) return <div style={{padding:"32px 0",textAlign:"center"}}><p style={{fontSize:28,marginBottom:8}}>✓</p><p style={{fontWeight:600,fontSize:16}}>Message sent. Expect a response within 24–48hrs.</p></div>
   return (
     <div style={{display:"grid",gap:14}}>
@@ -307,7 +307,7 @@ function BookingForm({ C, card, coral, onInvoiceGenerated }: { C: any, card: any
   const now=new Date(), yr=now.getFullYear(), mo=now.getMonth()
   const mdays=new Date(yr,mo+1,0).getDate(), mstart=new Date(yr,mo,1).getDay()
   const mname=now.toLocaleString("en",{month:"long"})
-  const ds=(d)=>`${yr}-${String(mo+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`
+  const ds=(d: any)=>${yr}-${String(mo+1).padStart(2,"0")}-${String(d).padStart(2,"0")}
 
   const inp = { width:"100%", padding:"11px 16px", borderRadius:8, fontSize:14, background:C.card2, border:`1px solid ${C.border}`, color:C.text, fontFamily:"'DM Sans',sans-serif", outline:"none" }
 
@@ -505,7 +505,7 @@ export default function App(){
     document.head.appendChild(s)
   },[mode])
 
-  const go = useCallback((p)=>{ setPage(p); setSb(false); window.scrollTo(0,0) },[])
+  const go = useCallback((p: any)=>{ setPage(p); setSb(false); window.scrollTo(0,0) },[])
   const saveInv = async(list)=>{ try{await window.storage.set("tvs4_inv",JSON.stringify(list))}catch{} }
 
   const card = {background:C.card,border:`1px solid ${C.border}`,borderRadius:12}
