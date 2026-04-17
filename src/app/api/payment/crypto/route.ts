@@ -2,15 +2,55 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseAdminClient } from '@/lib/supabase'
 import crypto from 'crypto'
 
-// NOW Payments gateway integration
-// Sign up at: nowpayments.io
-// Supports crypto and multi-currency invoices for direct checkout pages.
-
 export async function POST(req: NextRequest) {
+  // 1. GATEKEEPER: Check if this is a webhook from NOWPayments
+  const signature = req.headers.get('x-nowpayments-signature') || req.headers.get('X-NowPayments-Signature')
+
+  if (signature) {
+    // ─── WEBHOOK HANDLER LOGIC (Updating the database after payment) ───
+    try {
+      const body = await req.text()
+      // Adding 'as string' to satisfy strict TypeScript rules
+      const webhookSecret = process.env.NOWPAYMENTS_WEBHOOK_SECRET as string
+
+      if (!webhookSecret) {
+        return NextResponse.json({ error: 'Webhook secret missing' }, { status: 500 })
+      }
+
+      const hmac = crypto.createHmac('sha512', webhookSecret).update(body).digest('hex')
+      if (hmac !== signature) {
+        return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
+      }
+
+      const event = JSON.parse(body)
+      const status = event.payment_status || event.status
+
+      if (status === 'finished' || status === 'successful' || status === 'success') {
+        const invoiceId = event.order_id || event.order_id_string || event.external_id
+        const supabase = createSupabaseAdminClient()
+        await supabase
+          .from('invoices')
+          .update({
+            status: event.payment_type === 'deposit' ? 'deposit_paid' : 'paid',
+            payment_method: 'nowpayments',
+            crypto_currency: event.payment_currency || event.pay_currency || null,
+            payment_ref: event.payment_id || event.id || event.payment_hash || null,
+          })
+          .eq('id', invoiceId)
+      }
+
+      return NextResponse.json({ received: true })
+    } catch (err) {
+      console.error('Webhook error:', err)
+      return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 })
+    }
+  }
+
+  // ─── INVOICE CREATION LOGIC (Request from your frontend) ───
   try {
     const { invoiceId, invoiceNumber, amount, name, description, type } = await req.json()
 
-    const apiKey = process.env.NOWPAYMENTS_API_KEY
+    const apiKey = process.env.NOWPAYMENTS_API_KEY as string
     if (!apiKey) {
       return NextResponse.json({ error: 'NOW Payments not configured' }, { status: 503 })
     }
@@ -49,37 +89,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// Webhook handler — NOW Payments sends IPN callbacks when payment status changes
-export async function PUT(req: NextRequest) {
-  const body = await req.text()
-  const signature = req.headers.get('x-nowpayments-signature') || req.headers.get('X-NowPayments-Signature')
-  const webhookSecret = process.env.NOWPAYMENTS_WEBHOOK_SECRET
-
-  if (!signature || !webhookSecret) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const hmac = crypto.createHmac('sha512', webhookSecret).update(body).digest('hex')
-  if (hmac !== signature) {
-    return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
-  }
-
-  const event = JSON.parse(body)
-  const status = event.payment_status || event.status
-
-  if (status === 'finished' || status === 'successful' || status === 'success') {
-    const invoiceId = event.order_id || event.order_id_string || event.external_id
-    const supabase = createSupabaseAdminClient()
-    await supabase
-      .from('invoices')
-      .update({
-        status: event.payment_type === 'deposit' ? 'deposit_paid' : 'paid',
-        payment_method: 'nowpayments',
-        crypto_currency: event.payment_currency || event.pay_currency || null,
-        payment_ref: event.payment_id || event.id || event.payment_hash || null,
-      })
-      .eq('id', invoiceId)
-  }
-
-  return NextResponse.json({ received: true })
+export const config = {
+  runtime: 'edge',
 }

@@ -249,7 +249,7 @@ function addVAT(n: any) { return n + Math.round(n*VAT_RATE) }
 
 // ── FORM COMPONENTS (defined OUTSIDE App to prevent remount on each keystroke) ─
 
-function NewsletterForm({ C, card, coral }) {
+function NewsletterForm({ C, card, coral }: { C: any, card: any, coral: any }) {
   const [email, setEmail] = useState("")
   const [name, setName] = useState("")
   const [done, setDone] = useState(false)
@@ -273,7 +273,7 @@ function NewsletterForm({ C, card, coral }) {
   )
 }
 
-function ContactForm({ C, coral }) {
+function ContactForm({ C, coral }: { C: any, coral: any }) {
   const [form, setForm] = useState({ name:"", email:"", subject:"", message:"" })
   const [sent, setSent] = useState(false)
   const inp = { width:"100%", padding:"11px 16px", borderRadius:8, fontSize:14, background:C.card2, border:`1px solid ${C.border}`, color:C.text, fontFamily:"'DM Sans',sans-serif", outline:"none" }
@@ -292,7 +292,7 @@ function ContactForm({ C, coral }) {
   )
 }
 
-function BookingForm({ C, card, coral, onInvoiceGenerated }) {
+function BookingForm({ C, card, coral, onInvoiceGenerated }: { C: any, card: any, coral: any, onInvoiceGenerated: any }) {
   const [sess, setSess] = useState(null)
   const [fmt, setFmt] = useState(null)
   const [date, setDate] = useState(null)
@@ -428,7 +428,7 @@ function BookingForm({ C, card, coral, onInvoiceGenerated }) {
 }
 
 
-function AdminLoginForm({ C, coral, onSuccess }) {
+function AdminLoginForm({ C, coral, onSuccess }: { C: any, coral: any, onSuccess: any }) {
   const [pw, setPw] = useState("")
   const [err, setErr] = useState(false)
   const inp = {width:"100%",padding:"11px 16px",borderRadius:8,fontSize:14,background:C.card2,border:`1px solid ${err?coral:C.border}`,color:C.text,fontFamily:"'DM Sans',sans-serif",outline:"none",marginBottom:err?6:14}
@@ -1386,7 +1386,7 @@ export default function App(){
         </div>
         <button onClick={()=>{setCurrentUser(null);go("home")}} style={{padding:"8px 16px",borderRadius:7,fontSize:12,cursor:"pointer",fontFamily:"'DM Sans',sans-serif",background:"transparent",border:`1px solid ${C.border}`,color:C.muted}}>Sign Out</button>
       </div>}
-    </div>,home:<Home/>,services:<Services/>,sessions:<BookingForm C={C} card={card} coral={C.coral} onInvoiceGenerated={handleSessionInvoice}/>,portfolio:<Portfolio/>,books:<Books/>,school:<School/>,about:<About/>,contact:<Contact/>,newsletter:<Newsletter/>,cart:<Orders/>,orders:<Orders/>,invoices:<Orders/>,orders:<Orders/>,invoice:<InvoicePage/>,admin:<Admin/>}
+    </div>,home:<Home/>,services:<Services/>,sessions:<BookingForm C={C} card={card} coral={C.coral} onInvoiceGenerated={handleSessionInvoice}/>,portfolio:<Portfolio/>,books:<Books/>,school:<School/>,about:<About/>,contact:<Contact/>,newsletter:<Newsletter/>,cart:<Orders/>,orders:<Orders/>,invoices:<Orders/>,invoice:<InvoicePage/>,admin:<Admin/>}
 
   return (
     <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:"'DM Sans',sans-serif",transition:"background .35s,color .35s",position:"relative"}}>
