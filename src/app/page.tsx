@@ -307,7 +307,7 @@ function BookingForm({ C, card, coral, onInvoiceGenerated }: { C: any, card: any
   const now=new Date(), yr=now.getFullYear(), mo=now.getMonth()
   const mdays=new Date(yr,mo+1,0).getDate(), mstart=new Date(yr,mo,1).getDay()
   const mname=now.toLocaleString("en",{month:"long"})
-  const ds=(d: any)=>${yr}-${String(mo+1).padStart(2,"0")}-${String(d).padStart(2,"0")}
+  const ds=(d: any)=>`${yr}-${String(mo+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`
 
   const inp = { width:"100%", padding:"11px 16px", borderRadius:8, fontSize:14, background:C.card2, border:`1px solid ${C.border}`, color:C.text, fontFamily:"'DM Sans',sans-serif", outline:"none" }
 
