@@ -281,9 +281,9 @@ function ContactForm({ C, coral }: { C: any, coral: any }) {
   if(sent) return <div style={{padding:"32px 0",textAlign:"center"}}><p style={{fontSize:28,marginBottom:8}}>✓</p><p style={{fontWeight:600,fontSize:16}}>Message sent. Expect a response within 24–48hrs.</p></div>
   return (
     <div style={{display:"grid",gap:14}}>
-      {[["name","Name","text","Your full name"],["email","Email","email","your@email.com"],["subject","Subject","text","What is this about?"]].map(([k,l,t,p])=>(
+      {[["name","Name","text","Your full name"],["email","Email","email","your@email.com"],["subject","Subject","text","What is this about?"]].map(([k,l,t,p]: any)=>(
         <div key={k}><label style={{fontSize:12,color:C.muted,display:"block",marginBottom:6}}>{l}</label>
-        <input type={t} value={form[k]} onChange={set(k)} placeholder={p} style={inp}/></div>
+        <input type={t} value={(form as any)[k]} onChange={set(k)} placeholder={p} style={inp}/></div>
       ))}
       <div><label style={{fontSize:12,color:C.muted,display:"block",marginBottom:6}}>Message</label>
       <textarea rows={5} value={form.message} onChange={set("message")} placeholder="Tell me about your project or enquiry..." style={{...inp,resize:"vertical"}}/></div>
