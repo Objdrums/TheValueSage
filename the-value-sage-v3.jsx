@@ -1,8 +1,10 @@
-import { useState, useEffect, useCallback } from "react"
+'use client'
+import { useState, useEffect, useCallback } from 'react'
+
 
 // ── IMAGE SLOTS ───────────────────────────────────────────────────────────────
-const IMGS = { hero: "/hero-photo.svg", about: null }
-// Replace /hero-photo.svg with your own public asset or image URL to show your photo on the home screen.
+const IMGS = { hero: null, about: null }
+// Replace null with your image URLs e.g. "https://i.imgur.com/abc.jpg"
 
 // ── THEME ─────────────────────────────────────────────────────────────────────
 const THEMES = {
@@ -440,7 +442,42 @@ function AdminLoginForm({ C, coral, onSuccess }) {
 }
 
 // ── MAIN APP ──────────────────────────────────────────────────────────────────
-export default function App(){
+
+function AuthForm({ mode, onSuccess, onSwitch, C, coral }) {
+  const [email, setEmail] = useState('')
+  const [pw, setPw] = useState('')
+  const [name, setName] = useState('')
+  const [err, setErr] = useState('')
+  const [loading, setLoading] = useState(false)
+  const inp = { width:'100%', padding:'11px 16px', borderRadius:8, fontSize:14, background:C.card2, border:`1px solid ${C.border}`, color:C.text, fontFamily:"'DM Sans',sans-serif", outline:'none', marginBottom:14 }
+  const attempt = () => {
+    if(!email.includes('@')){ setErr('Please enter a valid email.'); return }
+    if(pw.length<6){ setErr('Password must be at least 6 characters.'); return }
+    if(mode==='signup'&&!name){ setErr('Please enter your name.'); return }
+    setLoading(true)
+    setTimeout(()=>{
+      onSuccess({ name: mode==='signup' ? name : email.split('@')[0], email })
+      setLoading(false)
+    }, 800)
+  }
+  return (
+    <div>
+      {err&&<div style={{background:C.cdim,border:`1px solid ${coral}`,borderRadius:7,padding:'10px 14px',marginBottom:14}}><p style={{color:coral,fontSize:13}}>{err}</p></div>}
+      {mode==='signup'&&<input value={name} onChange={e=>{setName(e.target.value);setErr('')}} placeholder='Your full name' style={inp}/>}
+      <input type='email' value={email} onChange={e=>{setEmail(e.target.value);setErr('')}} placeholder='you@email.com' style={inp}/>
+      <input type='password' value={pw} onChange={e=>{setPw(e.target.value);setErr('')}} placeholder='••••••••' style={{...inp,marginBottom:20}} onKeyDown={e=>e.key==='Enter'&&attempt()}/>
+      <button onClick={attempt} disabled={loading} style={{width:'100%',padding:'13px',borderRadius:8,fontSize:14,fontWeight:600,cursor:loading?'wait':'pointer',fontFamily:"'DM Sans',sans-serif",background:loading?'#333':coral,color:'#fff',border:'none',marginBottom:16}}>
+        {loading?'Please wait...':(mode==='signin'?'Sign In':'Create Account')}
+      </button>
+      <p style={{textAlign:'center',fontSize:13,color:C.muted}}>
+        {mode==='signin'?"Don't have an account? ":"Already have an account? "}
+        <span onClick={onSwitch} style={{color:coral,cursor:'pointer',fontWeight:600}}>{mode==='signin'?'Sign up':'Sign in'}</span>
+      </p>
+    </div>
+  )
+}
+
+export default function ValueSageApp(){
   const [mode, setMode] = useState("dark")
   const [page, setPage] = useState("home")
   const [sb, setSb] = useState(false)
@@ -484,14 +521,14 @@ export default function App(){
     const lnk=document.createElement("link"); lnk.rel="stylesheet"
     lnk.href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap"
     document.head.appendChild(lnk)
-    ;(async()=>{ try{ const r=await window.storage.get("tvs4_inv"); if(r) setInvoices(JSON.parse(r.value)) }catch{} })()
+    try{ const r=localStorage.getItem("tvs4_inv"); if(r) setInvoices(JSON.parse(r)) }catch{}
     setQuizPool(shuffle(QUIZ_POOL).slice(0,10))
   },[])
 
   useEffect(()=>{
     document.getElementById("tvs-s")?.remove()
     const s=document.createElement("style"); s.id="tvs-s"
-    s.textContent=`*{box-sizing:border-box;margin:0;padding:0}body{background:${C.bg};color:${C.text};font-family:'DM Sans',sans-serif;transition:background .35s,color .35s}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:${C.border};border-radius:2px}.syne{font-family:'Syne',sans-serif}@keyframes fu{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}@keyframes sc{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}@keyframes si{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}@keyframes orb1{0%,100%{transform:translate(0,0) scale(1)}40%{transform:translate(90px,-60px) scale(1.12)}70%{transform:translate(-40px,50px) scale(.92)}}@keyframes orb2{0%,100%{transform:translate(0,0) scale(1)}35%{transform:translate(-80px,45px) scale(.88)}75%{transform:translate(60px,-80px) scale(1.15)}}@keyframes orb3{0%,100%{transform:translate(0,0)}55%{transform:translate(40px,-50px)}}@keyframes mq{from{transform:translateX(0)}to{transform:translateX(-50%)}}@keyframes efade{from{opacity:0}to{opacity:1}}.afu{animation:fu .45s ease both}.asc{animation:sc .3s ease both}.asi{animation:si .35s ease both}.ch{transition:all .22s}.ch:hover{transform:translateY(-3px);border-color:${C.coral}!important}.ov{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto}@media print{.np{display:none!important}}@media(max-width:640px){
+    s.textContent=`*{box-sizing:border-box;margin:0;padding:0}body{background:${C.bg};color:${C.text};font-family:'DM Sans',sans-serif;transition:background .35s,color .35s}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:${C.border};border-radius:2px}.syne{font-family:'Syne',sans-serif}@keyframes fu{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}@keyframes sc{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}@keyframes si{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}@keyframes orb1{0%,100%{transform:translate(0,0) scale(1)}40%{transform:translate(90px,-60px) scale(1.12)}70%{transform:translate(-40px,50px) scale(.92)}}@keyframes orb2{0%,100%{transform:translate(0,0) scale(1)}35%{transform:translate(-80px,45px) scale(.88)}75%{transform:translate(60px,-80px) scale(1.15)}}@keyframes orb3{0%,100%{transform:translate(0,0)}55%{transform:translate(40px,-50px)}}@keyframes mq{from{transform:translateX(0)}to{transform:translateX(-50%)}}@keyframes efade{from{opacity:0}to{opacity:1}}.afu{animation:fu .45s ease both}.asc{animation:sc .3s ease both}.asi{animation:si .35s ease both}.ch{transition:all .22s}.ch:hover{transform:translateY(-3px);border-color:${C.coral}!important}.ov{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;display:flex;align-items:flex-start;justify-content:center;padding:clamp(16px,5vh,48px) 16px;overflow-y:auto}@media print{.np{display:none!important}}@media(max-width:640px){
   .syne{font-family:'Syne',sans-serif}
   nav .nl{display:none}
   nav .mob-show{display:flex!important}
@@ -503,7 +540,7 @@ export default function App(){
   },[mode])
 
   const go = useCallback((p)=>{ setPage(p); setSb(false); window.scrollTo(0,0) },[])
-  const saveInv = async(list)=>{ try{await window.storage.set("tvs4_inv",JSON.stringify(list))}catch{} }
+  const saveInv = (list)=>{ try{localStorage.setItem("tvs4_inv",JSON.stringify(list))}catch{} }
 
   const card = {background:C.card,border:`1px solid ${C.border}`,borderRadius:12}
   const btn = {padding:"12px 28px",borderRadius:8,fontSize:14,fontWeight:600}
@@ -621,13 +658,11 @@ export default function App(){
 
   const Home = () => (
     <div>
-      <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 clamp(16px,4vw,64px)",position:"relative",overflow:"hidden"}}>
+      <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 clamp(16px,4vw,64px)",position:"static",overflow:"hidden"}}>
         <div style={{position:"absolute",inset:0,pointerEvents:"none",animation:"efade 1.2s ease both"}}>
           <div style={{position:"absolute",top:"-5%",right:"-10%",width:"55%",height:"60%",background:`radial-gradient(circle,${C.coral}14 0%,transparent 68%)`,animation:"orb1 12s ease-in-out infinite"}}/>
           <div style={{position:"absolute",bottom:"-5%",left:"-8%",width:"45%",height:"50%",background:"radial-gradient(circle,#8B4CF61A 0%,transparent 65%)",animation:"orb2 15s ease-in-out infinite"}}/>
           <div style={{position:"absolute",top:"40%",left:"25%",width:"30%",height:"35%",background:`radial-gradient(circle,${C.coral}08 0%,transparent 60%)`,animation:"orb3 9s ease-in-out infinite"}}/>
-          <div style={{position:"absolute",top:"12%",left:"-8%",width:220,height:220,border:`1px solid rgba(255,77,46,.16)`,borderRadius:220,filter:"blur(12px)",animation:"orb2 9s ease-in-out infinite"}}/>
-          <div style={{position:"absolute",bottom:"22%",right:"-4%",width:"140%",height:18,background:"linear-gradient(90deg,transparent,rgba(255,77,46,.16),transparent)",transform:"rotate(-18deg)",filter:"blur(1px)",animation:"orb1 4.8s ease-in-out infinite"}}/>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:60,position:"relative",flexWrap:"wrap"}}>
           <div className="afu" style={{flex:1,minWidth:280}}>
@@ -668,7 +703,7 @@ export default function App(){
       <div style={{padding:"64px clamp(16px,4vw,64px)"}}>
         <p style={{color:C.muted,fontSize:11,letterSpacing:"0.18em",textTransform:"uppercase",marginBottom:36}}>What I Do</p>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:16}}>
-          {[{icon:"◈",t:"Brand Identity",d:"Full systems — naming, strategy, visual language, and guidelines.",to:"services",cat:"Brand",tag:"Brand"},{icon:"▦",t:"Web Design & Build",d:"Websites that look like your brand actually thought about itself.",cat:"Web",to:"services",tag:"Web"},{icon:"⬡",t:"AI & Automations",cat:"AI",d:"Real workflow integration — saving hours, scaling without extra headcount.",to:"services",tag:"AI"},{icon:"◉",t:"Sessions & Speaking",d:"1-on-1 coaching, group workshops, keynote speaking.",to:"sessions",tag:"Book"},{icon:"▣",t:"Books & Music",d:"Practical books on brand, business, value — and music theory (TEOM).",to:"books",tag:"Read"},{icon:"◆",t:"Brand School",d:"Free educational content across branding, finance, AI, and music.",to:"school",tag:"Free"}].map(item=>(
+          {[{icon:"◈",t:"Brand Identity",cat:"Brand",d:"Full systems — naming, strategy, visual language, and guidelines.",to:"services",tag:"Brand"},{icon:"▦",t:"Web Design & Build",d:"Websites that look like your brand actually thought about itself.",cat:"Web",to:"services",tag:"Web"},{icon:"⬡",t:"AI & Automations",cat:"AI",d:"Real workflow integration — saving hours, scaling without extra headcount.",to:"services",tag:"AI"},{icon:"◉",t:"Sessions & Speaking",d:"1-on-1 coaching, group workshops, keynote speaking.",to:"sessions",tag:"Book"},{icon:"▣",t:"Books & Music",d:"Practical books on brand, business, value — and music theory (TEOM).",to:"books",tag:"Read"},{icon:"◆",t:"Brand School",d:"Free educational content across branding, finance, AI, and music.",to:"school",tag:"Free"}].map(item=>(
             <div key={item.t} onClick={()=>{if(item.cat)setSvCat(item.cat);go(item.to)}} className="ch" style={{...card,padding:24,cursor:"pointer"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
                 <span style={{fontSize:22,color:C.coral}}>{item.icon}</span>
@@ -1317,30 +1352,13 @@ export default function App(){
             </div>
             <button onClick={()=>setAuthOpen(false)} style={{background:"none",border:"none",color:C.muted,fontSize:18,cursor:"pointer"}}>✕</button>
           </div>
-          {authErr&&<div style={{background:C.cdim,border:`1px solid ${C.coral}`,borderRadius:7,padding:"10px 14px",marginBottom:16}}><p style={{color:C.coral,fontSize:13}}>{authErr}</p></div>}
-          {authMode==="signup"&&(
-            <div style={{marginBottom:14}}>
-              <label style={{fontSize:12,color:C.muted,display:"block",marginBottom:6}}>Full Name</label>
-              <input value={authName} onChange={e=>{setAuthName(e.target.value);setAuthErr("")}} placeholder="Obanijesu Solomon" style={{width:"100%",padding:"11px 16px",borderRadius:8,fontSize:14,background:C.card2,border:`1px solid ${C.border}`,color:C.text,fontFamily:"'DM Sans',sans-serif",outline:"none"}}/>
-            </div>
-          )}
-          <div style={{marginBottom:14}}>
-            <label style={{fontSize:12,color:C.muted,display:"block",marginBottom:6}}>Email</label>
-            <input type="email" value={authEmail} onChange={e=>{setAuthEmail(e.target.value);setAuthErr("")}} placeholder="you@email.com" style={{width:"100%",padding:"11px 16px",borderRadius:8,fontSize:14,background:C.card2,border:`1px solid ${C.border}`,color:C.text,fontFamily:"'DM Sans',sans-serif",outline:"none"}}/>
-          </div>
-          <div style={{marginBottom:20}}>
-            <label style={{fontSize:12,color:C.muted,display:"block",marginBottom:6}}>Password</label>
-            <input type="password" value={authPw} onChange={e=>{setAuthPw(e.target.value);setAuthErr("")}} placeholder="••••••••" style={{width:"100%",padding:"11px 16px",borderRadius:8,fontSize:14,background:C.card2,border:`1px solid ${C.border}`,color:C.text,fontFamily:"'DM Sans',sans-serif",outline:"none"}} onKeyDown={e=>e.key==="Enter"&&handleAuth()}/>
-          </div>
-          <button onClick={handleAuth} disabled={authLoading} style={{width:"100%",padding:"13px",borderRadius:8,fontSize:14,fontWeight:600,cursor:authLoading?"wait":"pointer",fontFamily:"'DM Sans',sans-serif",background:authLoading?"#333":C.coral,color:"#fff",border:"none",marginBottom:16}}>
-            {authLoading?"Please wait...":(authMode==="signin"?"Sign In":"Create Account")}
-          </button>
-          <p style={{textAlign:"center",fontSize:13,color:C.muted}}>
-            {authMode==="signin"?"Don't have an account? ":"Already have an account? "}
-            <span onClick={()=>{setAuthMode(m=>m==="signin"?"signup":"signin");setAuthErr("")}} style={{color:C.coral,cursor:"pointer",fontWeight:600}}>
-              {authMode==="signin"?"Sign up":"Sign in"}
-            </span>
-          </p>
+          <AuthForm
+            mode={authMode}
+            onSuccess={(user)=>{ setCurrentUser(user); setAuthOpen(false) }}
+            onSwitch={()=>setAuthMode(m=>m==='signin'?'signup':'signin')}
+            C={C}
+            coral={C.coral}
+          />
           <div style={{borderTop:`1px solid ${C.border}`,paddingTop:16,marginTop:16,textAlign:"center"}}>
             <p style={{fontSize:11,color:C.muted,lineHeight:1.6}}>Signing in saves your cart and invoices across devices. One-tap checkout on return visits.</p>
           </div>
@@ -1414,7 +1432,7 @@ export default function App(){
           ))}
           <div style={{marginLeft:"auto",display:"flex",gap:7,alignItems:"center"}}>
             {cart.length>0&&<button onClick={()=>go("orders")} title={`${cart.length} item${cart.length>1?"s":""} in cart`} style={{position:"relative",padding:"5px 10px",borderRadius:7,fontSize:18,cursor:"pointer",fontFamily:"'DM Sans',sans-serif",background:"transparent",color:C.coral,border:`1px solid ${C.coral}`,lineHeight:1}}>
-              <span>🛍</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
               <span style={{position:"absolute",top:-6,right:-6,background:C.coral,color:"#fff",borderRadius:"50%",width:16,height:16,fontSize:9,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans',sans-serif"}}>{cart.length}</span>
             </button>}
             <button onClick={()=>setMode(m=>m==="dark"?"light":"dark")} style={{background:"none",border:`1px solid ${C.border}`,color:C.muted,borderRadius:7,padding:"5px 11px",cursor:"pointer",fontSize:13,fontFamily:"'DM Sans',sans-serif"}}>{mode==="dark"?"☀":"◑"}</button>
